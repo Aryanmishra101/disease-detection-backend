@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Diabetes Prediction</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Diabetes Prediction</h2>
+    <form id="predictForm">
+      <input type="number" name="Pregnancies" placeholder="Pregnancies" required>
+      <input type="number" name="Glucose" placeholder="Glucose Level" required>
+      <input type="number" name="BloodPressure" placeholder="Blood Pressure" required>
+      <input type="number" name="SkinThickness" placeholder="Skin Thickness" required>
+      <input type="number" name="Insulin" placeholder="Insulin" required>
+      <input type="number" name="BMI" placeholder="BMI" required>
+      <input type="number" name="DiabetesPedigreeFunction" placeholder="Diabetes Pedigree Function" required>
+      <input type="number" name="Age" placeholder="Age" required>
+      <button type="submit">Predict</button>
+    </form>
+    <div id="resultBox" style="margin-top:16px; display:none;"></div>
+  </div>
+
+<script>
+document.getElementById("predictForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  let data = {};
+  formData.forEach((v,k) => data[k] = Number(v));
+
+  // send request to backend
+  const res = await fetch("/predict", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  if (!res.ok) {
+    document.getElementById("resultBox").style.display = "block";
+    document.getElementById("resultBox").innerHTML = "Server error. See console.";
+    console.error(await res.text());
+    return;
+  }
+
+  const json = await res.json();
+  const box = document.getElementById("resultBox");
+  box.style.display = "block";
+  if (json.prediction === 1) {
+    box.className = "result-bad";
+    box.innerHTML = "⚠️ High chance of Diabetes";
+  } else {
+    box.className = "result-ok";
+    box.innerHTML = "✔️ Low chance of Diabetes";
+  }
+});
+</script>
+</body>
+</html>
